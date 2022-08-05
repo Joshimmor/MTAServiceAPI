@@ -6,9 +6,10 @@ import requests as r
 import mta_plugins as mta
 import psutil
 import os
-app = Flask(__name__)
 
-@app.route('/stats')
+application = Flask(__name__)
+
+@application.route('/stats')
 def stat():
     cpu = str(psutil.cpu_percent()) + '%'
     memory = psutil.virtual_memory()
@@ -22,7 +23,7 @@ def stat():
     disk_stat = str(free) + 'GB free / ' + str(total) + 'GB total ( ' + str(disk.percent) + '% )'
     return f"CPU usage:{cpu} | Memory usage:{mem_stat} | Disk usage: {disk_stat}"
 
-@app.route('/')
+@application.route('/')
 def index():
     args = request.args
     lat = float(args.get('Latitude'))
@@ -40,4 +41,4 @@ def index():
         return "Oops!  That was no valid data. Try again.."
 
 if __name__ == '__main__':
-    app.run()
+    application.run()
