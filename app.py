@@ -1,0 +1,43 @@
+
+from concurrent.futures import process
+from flask import Flask, request
+from google.transit import gtfs_realtime_pb2
+import requests as r 
+import mta_plugins as mta
+import psutil
+import os
+app = Flask(__name__)
+
+@app.route('/stats')
+def stat():
+    cpu = str(psutil.cpu_percent()) + '%'
+    memory = psutil.virtual_memory()
+    # Divide from Bytes -> KB -> MB
+    available = round(memory.available/1024.0/1024.0,1)
+    total = round(memory.total/1024.0/1024.0,1)
+    mem_stat = str(available) + 'MB free / ' + str(total) + 'MB total ( ' + str(memory.percent) + '% )'
+    disk = psutil.disk_usage('/')
+    free = round(disk.free/1024.0/1024.0/1024.0,1)
+    total = round(disk.total/1024.0/1024.0/1024.0,1)
+    disk_stat = str(free) + 'GB free / ' + str(total) + 'GB total ( ' + str(disk.percent) + '% )'
+    return f"CPU usage:{cpu} | Memory usage:{mem_stat} | Disk usage: {disk_stat}"
+
+@app.route('/')
+def index():
+    args = request.args
+    lat = float(args.get('Latitude'))
+    long = float(args.get('Longitude'))
+    feed = gtfs_realtime_pb2.FeedMessage()
+    resp = r.get('https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-jz',headers={"x-api-key":os.getenv("APIKEY")})
+    try:
+        feed.ParseFromString(resp.content)
+        station = mta.find_closest_station(long,lat)
+        trains = mta.filter_results(feed,station)
+        print(trains)
+        return {"trains":trains}
+        # return station
+    except :
+        return "Oops!  That was no valid data. Try again.."
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0')
