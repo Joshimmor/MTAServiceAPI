@@ -40,4 +40,4 @@ def index():
         return "Oops!  That was no valid data. Try again.."
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run()
