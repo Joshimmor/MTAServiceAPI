@@ -29,7 +29,7 @@ def index():
     lat = float(args.get('Latitude'))
     long = float(args.get('Longitude'))
     feed = gtfs_realtime_pb2.FeedMessage()
-    resp = r.get('https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-jz',headers={"x-api-key":os.getenv("APIKEY")})
+    resp = r.get('https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-jz')
     try:
         feed.ParseFromString(resp.content)
         station = mta.find_closest_station(long,lat)
